@@ -32,11 +32,12 @@ struct Room
 const std::string SERVER_IP = "119.29.25.185";
 const std::string PORT = "3008";
 const int max_length = 1024;
-int gRoomId = 0;
+int gRoomId = 1;
 vector<Room*> gRoomList;
 
 void create_room(socket_ptr sock, int playerNum)
 {
+    std::cout<<"***************************************" <<std::endl;
     std::cout<<"create room for " << playerNum <<" players!" <<std::endl;
     Room *new_room = new Room(gRoomId, playerNum);
     new_room->player_list.push_back(sock);
@@ -46,18 +47,38 @@ void create_room(socket_ptr sock, int playerNum)
     gRoomId++; //increase the global room id
 
     //tell the client that room is created successfully
-    string toSend = "CREATEROOM@" + std::to_string(gRoomId) + "\n"; 
+    string toSend = "CREATEROOM@" + std::to_string(new_room->room_id) + "\n"; 
     boost::asio::write(*sock, boost::asio::buffer(toSend, toSend.length()));
+    std::cout<<"***************************************" <<std::endl;
+}
+
+void list_room(socket_ptr sock)
+{
+   string toSend = "LISTROOM@";
+   for(int i = 0; i < (int)gRoomList.size(); ++i)
+   {
+        Room *r = gRoomList[i]; 
+        toSend += std::to_string(r->room_id) + " " 
+                  + std::to_string(r->max_player_num) + " "
+                  + std::to_string(r->player_list.size()) + "|"; 
+   }
+
+   toSend += "\n";
+   std::cout<<"list_room msg: " <<toSend <<std::endl;
+
+   boost::asio::write(*sock, boost::asio::buffer(toSend, toSend.length()));
 }
 
 void handle_message(socket_ptr sock, std::string msg)
 {
     std::cout<<"I have received msg: " <<msg <<std::endl;
-    std::size_t found = msg.find("CREATEROOM");
-    if(found != std::string::npos)
+    if(msg.find("CREATEROOM") != std::string::npos)
     {
        int playerNum = std::stoi(msg.substr(strlen("CREATEROOM") + 1));
        create_room(sock, playerNum);
+    }else if(msg.find("LISTROOM") != std::string::npos)
+    {
+       list_room(sock); 
     }
 }
 

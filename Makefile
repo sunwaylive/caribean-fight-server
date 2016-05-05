@@ -5,7 +5,7 @@ ALL_INCLUDE = -I $(BOOST_INCLUDE_DIR) -I ./ -I /usr/include/ -I /usr/include/c++
 
 CC = g++
 DEBUG = -g
-CFLAGS = -Wall -c $(DEBUG) -std=c++11
+CFLAGS = -Wall -c $(DEBUG) -std=c++11 -Werror
 LFLAGS = -pthread -L$(BOOST_LIB_DIR) -lboost_thread -lboost_system -lrt
 
 all: server
