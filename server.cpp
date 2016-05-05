@@ -37,7 +37,7 @@ vector<Room*> gRoomList;
 
 void create_room(socket_ptr sock, int playerNum)
 {
-    std::cout<<"***************************************" <<std::endl;
+    std::cout<<"**************create room*************************" <<std::endl;
     std::cout<<"create room for " << playerNum <<" players!" <<std::endl;
     Room *new_room = new Room(gRoomId, playerNum);
     new_room->player_list.push_back(sock);
@@ -49,11 +49,13 @@ void create_room(socket_ptr sock, int playerNum)
     //tell the client that room is created successfully
     string toSend = "CREATEROOM@" + std::to_string(new_room->room_id) + "\n"; 
     boost::asio::write(*sock, boost::asio::buffer(toSend, toSend.length()));
+    std::cout<<"send to client: " <<toSend <<std::endl;
     std::cout<<"***************************************" <<std::endl;
 }
 
 void list_room(socket_ptr sock)
 {
+   std::cout<<"*******list room********************************" <<std::endl;
    string toSend = "LISTROOM@";
    for(int i = 0; i < (int)gRoomList.size(); ++i)
    {
@@ -64,9 +66,34 @@ void list_room(socket_ptr sock)
    }
 
    toSend += "\n";
-   std::cout<<"list_room msg: " <<toSend <<std::endl;
 
    boost::asio::write(*sock, boost::asio::buffer(toSend, toSend.length()));
+   std::cout<<"send to client: " <<toSend <<std::endl;
+   std::cout<<"***************************************" <<std::endl;
+}
+
+void join_room(socket_ptr sock, int roomId)
+{
+    std::cout<<"************join room***************************" <<std::endl;
+    string toSend = "JOINTROOM\n";
+    for(int i =  0; i < (int)gRoomList.size(); ++i)
+    {
+        Room *r = gRoomList[i];
+        if(r->room_id == roomId)
+        {
+            if((int)r->player_list.size() >= r->max_player_num)
+            {
+                std::cerr<<"Room is full!" <<std::endl;
+                return;
+            }
+                
+            r->player_list.push_back(sock);
+        }
+    }
+
+    boost::asio::write(*sock, boost::asio::buffer(toSend, toSend.length()));
+    std::cout<<"send to client: " <<toSend <<std::endl;
+    std::cout<<"***************************************" <<std::endl;
 }
 
 void handle_message(socket_ptr sock, std::string msg)
@@ -79,6 +106,10 @@ void handle_message(socket_ptr sock, std::string msg)
     }else if(msg.find("LISTROOM") != std::string::npos)
     {
        list_room(sock); 
+    }else if(msg.find("JOINROOM") != std::string::npos)
+    {
+        int roomId = std::stoi(msg.substr(strlen("JOINROOM") + 1));
+        join_room(sock, roomId);
     }
 }
 
@@ -98,8 +129,8 @@ void client_session(socket_ptr sock)
             else if(error)
                 throw boost::system::system_error(error); //some other error
 
-            handle_message(sock, std::string(data));
             std::cout<<"recv from client length: " << length <<std::endl;
+            handle_message(sock, std::string(data));
             //boost::asio::write(sock, boost::asio::buffer(data, length));
         }
     }
