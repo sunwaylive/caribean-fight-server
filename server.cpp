@@ -96,6 +96,27 @@ void join_room(socket_ptr sock, int roomId)
     std::cout<<"***************************************" <<std::endl;
 }
 
+void start_game(socket_ptr sock, int roomId)
+{
+    std::cout<<"************start game***************************" <<std::endl;
+    string toSend = "STARTGAME\n";
+    auto room_iter = gRoomList.begin();
+    for(; room_iter != gRoomList.end(); ++room_iter)
+    {
+        if((*room_iter)->room_id == roomId)
+        {
+            auto& player_list = (*room_iter)->player_list;
+            for(auto player_iter = player_list.begin(); player_iter != player_list.end(); ++player_iter)
+            {
+                boost::asio::write(**player_iter, boost::asio::buffer(toSend, toSend.length())); 
+            }
+        }
+    }
+
+    std::cout<<"send to client: " <<toSend <<std::endl;
+    std::cout<<"***************************************" <<std::endl;
+}
+
 void handle_message(socket_ptr sock, std::string msg)
 {
     std::cout<<"I have received msg: " <<msg <<std::endl;
@@ -103,13 +124,24 @@ void handle_message(socket_ptr sock, std::string msg)
     {
        int playerNum = std::stoi(msg.substr(strlen("CREATEROOM") + 1));
        create_room(sock, playerNum);
-    }else if(msg.find("LISTROOM") != std::string::npos)
+    }
+    else if(msg.find("LISTROOM") != std::string::npos)
     {
        list_room(sock); 
-    }else if(msg.find("JOINROOM") != std::string::npos)
+    }
+    else if(msg.find("JOINROOM") != std::string::npos)
     {
         int roomId = std::stoi(msg.substr(strlen("JOINROOM") + 1));
         join_room(sock, roomId);
+    }
+    else if(msg.find("STARTGAME") != std::string::npos)
+    {
+
+    }
+    else if(msg.find("UPDATEGAME") != std::string::npos)
+    {
+        //send message to other clients 
+
     }
 }
 
