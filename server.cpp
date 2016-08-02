@@ -31,6 +31,13 @@ struct Room
 
 const std::string SERVER_IP = "119.29.25.185";
 const std::string PORT = "3008";
+
+//if two players, then put them in different camp, A and B
+const std::string TWO_PLAYER_START_GAME_STRING = "0,A#1,B";
+
+//if four players, then first 2 are in camp A, second 2 are in camp B
+const std::string FOUR_PLAYER_START_GAME_STRING = "0,A#1,A#2,B#3,B";
+
 const int max_length = 1024;
 int gRoomId = 1;
 vector<Room*> gRoomList;
@@ -114,20 +121,36 @@ void join_room(socket_ptr sock, int roomId)
 void start_game(socket_ptr sock, int roomId)
 {
     std::cout<<"************start game***************************" <<std::endl;
-    string toSend = "STARTGAME\n";
-    auto room_iter = gRoomList.begin();
-    for(; room_iter != gRoomList.end(); ++room_iter)
+    Room *room = find_room(roomId);
+    if(room == NULL)
     {
-        if((*room_iter)->room_id == roomId)
-        {
-            auto& player_list = (*room_iter)->player_list;
-            int player_idx = 0;
-            for(auto player_iter = player_list.begin(); player_iter != player_list.end(); ++player_iter)
-            {
-                boost::asio::write(**player_iter, boost::asio::buffer(toSend, toSend.length()));
-                std::cout<<"send to client: "<<player_idx++  <<toSend <<std::endl;
-            }
-        }
+        std::cerr<<"Error: wrong room id: " <<roomId <<std::endl;
+        return
+    }
+
+    string toSend;
+    string toSendEnd;
+
+    auto& player_list = room->player_list;
+    if(player_list.size() == 2)
+    {
+        toSendEnd = TWO_PLAYER_START_GAME_STRING;
+    }
+    else if(player_list.size() == 4)
+    {
+        toSendEnd = FOUR_PLAYER_START_GAME_STRING;
+    }
+
+    int player_idx = 0;
+    //each player
+    for(auto player_iter = player_list.begin(); player_iter != player_list.end(); ++player_iter)
+    {
+        //STARTGAME#max_players_num#my_idx#0,A#1,A#2,B#3,B\n
+        toSend = "STARTGAME#" + std::to_string(player_list.size()) + "#"
+                 + std::to_string(player_idx) +"#" + toSendEnd;
+
+        boost::asio::write(**player_iter, boost::asio::buffer(toSend, toSend.length()));
+        std::cout<<"send to client: "<<player_idx++  <<toSend <<std::endl;
     }
 
     std::cout<<"***************************************" <<std::endl;
@@ -140,6 +163,7 @@ void update_game(socket_ptr sock, int roomId, std::string msg)
     if(room == NULL)
     {
         std::cerr<<"Error: wrong room id: " <<roomId <<std::endl;
+        return;
     }
 
     //broadcast to all other players in the room
