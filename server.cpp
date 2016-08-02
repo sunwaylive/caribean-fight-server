@@ -139,7 +139,7 @@ void update_game(socket_ptr sock, int roomId, std::string msg)
     Room *room = find_room(roomId);
     if(room == NULL)
     {
-        std::err<<"Error: wrong room id: " <<roomId <<std::endl;
+        std::cerr<<"Error: wrong room id: " <<roomId <<std::endl;
     }
 
     //broadcast to all other players in the room
@@ -187,7 +187,7 @@ void handle_message(socket_ptr sock, std::string msg)
     else if(msg.find("UPDATEGAME") != std::string::npos)
     {
         //send message to other clients
-        int roomId = std::stoi(msg.substr(strlen(""UPDATEGAME) + 1));
+        int roomId = std::stoi(msg.substr(strlen("UPDATEGAME") + 1));
         update_game(sock, roomId, msg);
     }
 }
