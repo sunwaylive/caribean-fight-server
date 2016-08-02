@@ -35,6 +35,21 @@ const int max_length = 1024;
 int gRoomId = 1;
 vector<Room*> gRoomList;
 
+/*************************************************************************/
+Room* find_room(int room_id)
+{
+    Room *r = NULL;
+    for(auto iter = gRoomList.begin(); iter != gRoomList.end(); ++iter)
+    {
+        if((*iter)->room_id == room_id)
+        {
+            r = *iter;
+        }
+    }
+
+    return r;
+}
+
 void create_room(socket_ptr sock, int playerNum)
 {
     std::cout<<"**************create room*************************" <<std::endl;
@@ -47,7 +62,7 @@ void create_room(socket_ptr sock, int playerNum)
     gRoomId++; //increase the global room id
 
     //tell the client that room is created successfully
-    string toSend = "CREATEROOM@" + std::to_string(new_room->room_id) + "\n"; 
+    string toSend = "CREATEROOM@" + std::to_string(new_room->room_id) + "\n";
     boost::asio::write(*sock, boost::asio::buffer(toSend, toSend.length()));
     std::cout<<"send to client: " <<toSend <<std::endl;
     std::cout<<"***************************************" <<std::endl;
@@ -59,10 +74,10 @@ void list_room(socket_ptr sock)
    string toSend = "LISTROOM@";
    for(int i = 0; i < (int)gRoomList.size(); ++i)
    {
-        Room *r = gRoomList[i]; 
-        toSend += std::to_string(r->room_id) + " " 
+        Room *r = gRoomList[i];
+        toSend += std::to_string(r->room_id) + " "
                   + std::to_string(r->max_player_num) + " "
-                  + std::to_string(r->player_list.size()) + "|"; 
+                  + std::to_string(r->player_list.size()) + "|";
    }
 
    toSend += "\n";
@@ -86,7 +101,7 @@ void join_room(socket_ptr sock, int roomId)
                 std::cerr<<"Room is full!" <<std::endl;
                 return;
             }
-                
+
             r->player_list.push_back(sock);
         }
     }
@@ -106,15 +121,45 @@ void start_game(socket_ptr sock, int roomId)
         if((*room_iter)->room_id == roomId)
         {
             auto& player_list = (*room_iter)->player_list;
+            int player_idx = 0;
             for(auto player_iter = player_list.begin(); player_iter != player_list.end(); ++player_iter)
             {
-                boost::asio::write(**player_iter, boost::asio::buffer(toSend, toSend.length())); 
+                boost::asio::write(**player_iter, boost::asio::buffer(toSend, toSend.length()));
+                std::cout<<"send to client: "<<player_idx++  <<toSend <<std::endl;
             }
         }
     }
 
-    std::cout<<"send to client: " <<toSend <<std::endl;
     std::cout<<"***************************************" <<std::endl;
+}
+
+void update_game(socket_ptr sock, int roomId, std::string msg)
+{
+    //std::cout<<"************update game***************************" <<std::endl;
+    Room *room = find_room(roomId);
+    if(room == NULL)
+    {
+        std::err<<"Error: wrong room id: " <<roomId <<std::endl;
+    }
+
+    //broadcast to all other players in the room
+    for(auto iter = room->player_list.begin(); iter != room->player_list.end(); ++iter)
+    {
+        if(sock == *iter)
+        {
+            //self
+            continue;
+        }
+
+        boost::asio::write(**iter, boost::asio::buffer(msg, msg.length()));
+    }
+
+    //std::cout<<"***************************************" <<std::endl;
+}
+
+void end_game(socket_ptr sock, int roomId)
+{
+
 }
 
 void handle_message(socket_ptr sock, std::string msg)
@@ -127,7 +172,7 @@ void handle_message(socket_ptr sock, std::string msg)
     }
     else if(msg.find("LISTROOM") != std::string::npos)
     {
-       list_room(sock); 
+       list_room(sock);
     }
     else if(msg.find("JOINROOM") != std::string::npos)
     {
@@ -136,12 +181,14 @@ void handle_message(socket_ptr sock, std::string msg)
     }
     else if(msg.find("STARTGAME") != std::string::npos)
     {
-
+        int roomId = std::stoi(msg.substr(strlen("STARTGAME") + 1));
+        start_game(sock, roomId);
     }
     else if(msg.find("UPDATEGAME") != std::string::npos)
     {
-        //send message to other clients 
-
+        //send message to other clients
+        int roomId = std::stoi(msg.substr(strlen(""UPDATEGAME) + 1));
+        update_game(sock, roomId, msg);
     }
 }
 
@@ -186,7 +233,7 @@ void server(boost::asio::io_service &io_service, unsigned short port)
 
         //after std::move the sock will be empty
         //std::thread(functionPtr, args)
-        
+
         //std::thread(session, std::move(sock)).detach();
         //after seperate the socket into a new thread, the main thread will go on listening to clients
     }
