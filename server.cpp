@@ -125,7 +125,7 @@ void start_game(socket_ptr sock, int roomId)
     if(room == NULL)
     {
         std::cerr<<"Error: wrong room id: " <<roomId <<std::endl;
-        return
+        return;
     }
 
     string toSend;
@@ -147,10 +147,10 @@ void start_game(socket_ptr sock, int roomId)
     {
         //STARTGAME#max_players_num#my_idx#0,A#1,A#2,B#3,B\n
         toSend = "STARTGAME#" + std::to_string(player_list.size()) + "#"
-                 + std::to_string(player_idx) +"#" + toSendEnd;
+                 + std::to_string(player_idx) +"#" + toSendEnd + "\n";
 
         boost::asio::write(**player_iter, boost::asio::buffer(toSend, toSend.length()));
-        std::cout<<"send to client: "<<player_idx++  <<toSend <<std::endl;
+        std::cout<<"send to client "<<player_idx++<<": " <<toSend <<std::endl;
     }
 
     std::cout<<"***************************************" <<std::endl;
