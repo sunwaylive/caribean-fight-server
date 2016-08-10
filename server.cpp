@@ -125,7 +125,7 @@ void start_game(socket_ptr sock, int roomId)
     if(room == NULL)
     {
         std::cerr<<"Error: wrong room id: " <<roomId <<std::endl;
-        return
+        return;
     }
 
     string toSend;
