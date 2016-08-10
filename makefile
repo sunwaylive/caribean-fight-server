@@ -11,11 +11,10 @@ LFLAGS = -pthread -L$(BOOST_LIB_DIR) -lboost_thread -lboost_system -lrt
 all: server
 
 server: server.o
-	    $(CC) server.o -o server $(LFLAGS)
+	$(CC) server.o -o server $(LFLAGS)
 
 server.o: server.cpp
-	    $(CC) $(CFLAGS) $(ALL_INCLUDE) -c server.cpp
+	$(CC) $(CFLAGS) $(ALL_INCLUDE) -c server.cpp
 
 clean:
-	    \rm *.o *~ server
-
+	\rm *.o *~ server
