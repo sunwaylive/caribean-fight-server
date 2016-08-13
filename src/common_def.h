@@ -9,12 +9,15 @@
 #include <boost/thread/thread.hpp>
 #include <boost/bind.hpp>
 #include <iostream>
+#include <string>
 
 using boost::asio::ip::tcp;
 using namespace std;
 
 //use boost shared ptr to wrap socket
 typedef boost::shared_ptr<tcp::socket> SocketPtr;
+
+static const int kMaxPkgSize= 1024;
 
 static const int kMaxActionNumInOneFrame = 40; //一帧之内玩家操作的数量上限
 

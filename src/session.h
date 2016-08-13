@@ -1,11 +1,15 @@
 #ifndef _SESSION_H_
 #define _SESSION_H_
+
 #include <stddef.h>
 #include <stdint.h>
+#include <string>
 #include "Action.h"
 #include "ring_queue.h"
 #include "udp_pkg_def.h"
 #include "common_def.h"
+#include "room.h"
+#include "room_mgr.h"
 
 class Frame;
 class FrameMgr;
@@ -30,9 +34,10 @@ typedef struct SeqInfo
 class Session
 {
 public:
-    Session(SocketPtr sock_ptr) : m_sock_ptr(sock_ptr) {}
+    Session(SocketPtr sock_ptr) : m_sock_ptr(sock_ptr), m_pkg("") {}
 
     SocketPtr GetSocketPtr() const { return m_sock_ptr; }
+    string HandlePkg(std::string pkg);
 
     /******************/
     ~Session()
@@ -50,6 +55,8 @@ public:
     void Reset();
 
 public:
+    /*******************/
+
     //设置加密用的钥匙
     void SetKey(const char *key);
     void SetUseCheckSum(int use_check_sum) { m_use_check_sum = use_check_sum; }
@@ -69,12 +76,12 @@ private:
     void N2H(UdpPkgRecvHead *head);
     void N2H(RecvAction *action);
 
-    int SendToClient(int fd, char *buf, int lne, struct sockaddr_in *addr = NULL);
+    //int SendToClient(int fd, char *buf, int lne, struct sockaddr_in *addr = NULL);
 
 private:
     std::string m_sid;
     SocketPtr m_sock_ptr;
-
+    char m_pkg[kMaxPkgSize];
     /******************/
     int m_client_seq;
     int m_client_ack;
