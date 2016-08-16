@@ -16,6 +16,8 @@ set (SERVER_LIBS
                 libboost_thread.a)
 
 set (CMAKE_CXX_FLAGS "-Wall -g -std=c++11 -Werror")
+set (CMAKE_EXE_LINKER_FLAGS "-pthread -lrt")
+
 set (EXECUTABLE_OUTPUT_PATH ${PROJECT_SOURCE_DIR}/bin)
 
 message("####### collecting files ######")

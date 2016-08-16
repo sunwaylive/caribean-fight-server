@@ -4,7 +4,7 @@
 #include <stddef.h>
 #include <stdint.h>
 #include <string>
-#include "Action.h"
+#include "action.h"
 #include "ring_queue.h"
 #include "udp_pkg_def.h"
 #include "common_def.h"
@@ -34,7 +34,7 @@ typedef struct SeqInfo
 class Session
 {
 public:
-    Session(SocketPtr sock_ptr) : m_sock_ptr(sock_ptr), m_pkg("") {}
+    Session(SocketPtr sock_ptr) : m_sock_ptr(sock_ptr){}
 
     SocketPtr GetSocketPtr() const { return m_sock_ptr; }
     string HandlePkg(std::string pkg);
