@@ -9,14 +9,23 @@ project(server)
 message("project source dir: " ${PROJECT_SOURCE_DIR})
 
 set (BOOST_INCLUDE_DIR ${PROJECT_SOURCE_DIR}/3rd/boost_1_60_0/include)
-set (BOOST_LIB_DIR ${PROJECT_SOURCE_DIR}/3rd/boost_1_60_0/lib)
+
+message("cmake_system: " ${CMAKE_SYSTEM})
+message("cmake_system_name: " ${CMAKE_SYSTEM_NAME})
+
+if("${CMAKE_SYSTEM_NAME}" MATCHES "Linux")
+    set (CMAKE_EXE_LINKER_FLAGS "-pthread -lrt")
+    set (BOOST_LIB_DIR ${PROJECT_SOURCE_DIR}/3rd/boost_1_60_0/lib/Linux)
+elseif(${CMAKE_SYSTEM_NAME} MATCHES "Darwin")
+    set (BOOST_LIB_DIR ${PROJECT_SOURCE_DIR}/3rd/boost_1_60_0/lib/MacOS)
+endif()
 
 set (SERVER_LIBS
                 libboost_system.a
                 libboost_thread.a)
 
 set (CMAKE_CXX_FLAGS "-Wall -g -std=c++11 -Werror")
-set (CMAKE_EXE_LINKER_FLAGS "-pthread -lrt")
+
 
 set (EXECUTABLE_OUTPUT_PATH ${PROJECT_SOURCE_DIR}/bin)
 
