@@ -15,6 +15,7 @@
 /*************************************************************************/
 const std::string SERVER_IP = "119.29.25.185";
 const std::string PORT = "3008";
+const std::string FSP_PORT = "3009";
 
 /*************************************************************************/
 //void start_game(SocketPtr sock, int roomId)
@@ -155,8 +156,8 @@ void server(boost::asio::io_service &io_service, unsigned short port)
         acp.accept(*sock_ptr);
 
         //when a new player connected, add a new session
-        std::string sock_ip = boost::lexical_cast<std::string>(sock_ptr->remote_endpoint());
-        std::cout<<"sock_ip: " <<sock_ip <<std::endl;
+        //std::string sock_ip = boost::lexical_cast<std::string>(sock_ptr->remote_endpoint());
+        std::string sock_ip = sock_ptr->remote_endpoint().address().to_string();
 
         Session *sess = SessionMgrSin::instance().AddSession(sock_ip, sock_ptr);
         if(sess == NULL)
@@ -174,10 +175,26 @@ void server(boost::asio::io_service &io_service, unsigned short port)
     }
 }
 
-//void init()
-//{
-//    RoomMgrSin::instance().Init();
-//}
+void fsp_server(boost::asio::io_service &io_service, unsigned short port)
+{
+    printf("Enter fsp server\n");
+    tcp::acceptor acp(io_service, tcp::endpoint(tcp::v4(), port));
+    for(;;)
+    {
+        SocketPtr sock_ptr(new tcp::socket(io_service));
+        acp.accept(*sock_ptr);
+
+        //when a player connect by fsp port, he must have been in the room
+        std::string sock_ip = sock_ptr->remote_endpoint().address().to_string();
+        Session *sess = SessionMgrSin::instance().GetSession(sock_ip);
+        if(sess == NULL)
+        {
+            continue;
+        }
+
+
+    }
+}
 
 int main(int argc, char* argv[])
 {
@@ -196,6 +213,10 @@ int main(int argc, char* argv[])
 
         boost::asio::io_service io_service;
         server(io_service, std::atoi(server_port.c_str()));
+
+        //create a fsp server for pvp frame synchronize protocol in game
+        std::string fsp_server_port = FSP_PORT;
+        fsp_server(io_service, std::atoi(fsp_server_port.c_str()));
     }
     catch(std::exception &e)
     {
