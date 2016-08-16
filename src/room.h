@@ -20,13 +20,18 @@ public:
 
     unsigned GetMaxPlayerNum() const { return m_max_player_num; }
     unsigned GetCurPlayerNum() const { return m_player_list.size(); }
+    vector<Session*>* GetPlayerList() { return &m_player_list; }
 
     int AddPlayer(Session *player);
+
+    bool IsFighting() const { return m_is_fighting; }
+    void SetFightingState(bool is_fighting) { m_is_fighting = is_fighting; }
 
 private:
     unsigned m_rid;
     unsigned m_max_player_num;
     vector<Session*> m_player_list;
+    bool m_is_fighting;
 };
 
 #endif

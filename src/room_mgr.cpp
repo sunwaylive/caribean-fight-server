@@ -38,3 +38,28 @@ Room* RoomMgr::JoinRoom(Session *player, unsigned rid)
     return r;
 }
 
+Game* RoomMgr::StartGame(unsigned rid)
+{
+    auto iter = m_room_map.find(rid);
+    if(iter == m_room_map.end())
+    {
+        printf("ERROR: can not find room id: %d\n", rid);
+        return NULL;
+    }
+
+    Room *r = iter->second;
+    //room exist and is NOT fighting
+    if(r != NULL && !r->IsFighting())
+    {
+        //let room r start fighting
+        Game *new_game = GameMgrSin::instance().CreateGame(r);
+        return new_game;
+    }
+    else
+    {
+       printf("ERROR: can not start a game\n");
+       return NULL;
+    }
+
+    return NULL;
+}

@@ -10,8 +10,6 @@
 using boost::asio::ip::tcp;
 typedef boost::shared_ptr<tcp::socket> SocketPtr;
 
-class Session;
-
 class SessionMgr
 {
 public:

@@ -16,12 +16,6 @@
 const std::string SERVER_IP = "119.29.25.185";
 const std::string PORT = "3008";
 
-//if two players, then put them in different camp, A and B
-const std::string TWO_PLAYER_START_GAME_STRING = "0,A#1,B";
-
-//if four players, then first 2 are in camp A, second 2 are in camp B
-const std::string FOUR_PLAYER_START_GAME_STRING = "0,A#1,A#2,B#3,B";
-
 /*************************************************************************/
 //void start_game(SocketPtr sock, int roomId)
 //{
@@ -132,15 +126,18 @@ void client_session(Session *sess)
         {
             char data[kMaxPkgSize] = "";
             boost::system::error_code error;
-            unsigned long length = sock->read_some(boost::asio::buffer(data), error);
+            sock->read_some(boost::asio::buffer(data), error);
             if(error == boost::asio::error::eof)
                 break; //connection closed cleanly by peer
             else if(error)
                 throw boost::system::system_error(error); //some other error
 
             std::string rsp = sess->HandlePkg(std::string(data));
-            //the length must be right, because write() will wait until all data is write to the pipe
-            boost::asio::write(*sock, boost::asio::buffer(rsp.c_str(), rsp.length()), error);
+            if(rsp.length() > 0)
+            {
+                //the length must be right, because write() will wait until all data is write to the pipe
+                boost::asio::write(*sock, boost::asio::buffer(rsp.c_str(), rsp.length()), error);
+            }
         }
     }
     catch(std::exception &e)

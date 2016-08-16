@@ -55,33 +55,22 @@ public:
     void Reset();
 
 public:
-    /*******************/
-
-    //设置加密用的钥匙
-    void SetKey(const char *key);
-    void SetUseCheckSum(int use_check_sum) { m_use_check_sum = use_check_sum; }
-    uint16_t CheckSum(uint16_t *buf, int len);
-
     //发送缓存的数据
     void FlushCache(FrameMgr *frame_mgr);
-
-    //接受客户端的包
-    int Recv(int fd, char *buf, size_t len, const struct sockaddr_in& addr, bool need_ntohs = true);
 
     //操作缓存的action, 成功返回0, 非0表示弹出失败，可能action队列空了
     int PopAction(Action& action);
     size_t GetRemainActionCnt() { return m_action_cache.size(); }
 
 private:
-    void N2H(UdpPkgRecvHead *head);
-    void N2H(RecvAction *action);
+    std::string m_sid; //session id
+    unsigned m_rid;    //room id
+    unsigned m_gid;    //game id
 
-    //int SendToClient(int fd, char *buf, int lne, struct sockaddr_in *addr = NULL);
-
-private:
-    std::string m_sid;
     SocketPtr m_sock_ptr;
     char m_pkg[kMaxPkgSize];
+
+    RingQueue<Action, 100> m_action_cache; //100 must be enough for a normal player
     /******************/
     int m_client_seq;
     int m_client_ack;
@@ -90,7 +79,6 @@ private:
     char m_key[kMaxKeySize + 1]; //用于加密的key
 
     SeqInfo m_ack_info; //已经被确认的最新(大)的发送序列信息
-    RingQueue<Action, 100> m_action_cache;
 
     int m_use_check_sum; //是否开启校验报的checksum, 如果开启，最后两个字节为校验和
 };

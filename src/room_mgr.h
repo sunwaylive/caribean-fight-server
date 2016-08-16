@@ -4,6 +4,8 @@
 #include <unordered_map>
 #include "util/singleton.h"
 #include "room.h"
+#include "game.h"
+#include "game_mgr.h"
 #include "session.h"
 
 class Room;
@@ -14,8 +16,9 @@ class RoomMgr
 public:
     Room* CreateRoom(Session *creator, unsigned player_num);
     Room* JoinRoom(Session *player, unsigned rid);
+    Game* StartGame(unsigned rid);
 
-   const unordered_map<unsigned, Room*>* GetAllRoomMap() const { return &m_room_map; }
+    const unordered_map<unsigned, Room*>* GetAllRoomMap() const { return &m_room_map; }
 
 private:
     unordered_map<unsigned, Room*> m_room_map;

@@ -1,14 +1,22 @@
 #include "session.h"
 #include <boost/asio.hpp>
 
+/**************************************************************/
 string Session::HandlePkg(std::string pkg)
 {
     std::cout<<"I have received pkg: " <<pkg <<std::endl;
 
     if(pkg.find("CREATEROOM") != std::string::npos)
     {
+        if(m_rid != 0)
+        {
+            printf("ERROR: already in a room!\n");
+            return "";
+        }
+
         int playerNum = std::stoi(pkg.substr(strlen("CREATEROOM") + 1));
         Room *new_room = RoomMgrSin::instance().CreateRoom(this, playerNum);
+        m_rid = new_room->GetId();
 
         std::string to_send = "CREATEROOM@" + std::to_string(new_room->GetId()) + "\n";
         return to_send;
@@ -38,12 +46,19 @@ string Session::HandlePkg(std::string pkg)
         std::string to_send = "JOINTROOM\n";
         return to_send;
     }
-    //else if(pkg.find("STARTGAME") != std::string::npos)
-    //{
-    //    int roomId = std::stoi(pkg.substr(strlen("STARTGAME") + 1));
-    //    printf("%d\n", roomId);
-    //    //start_game(sock, roomId);
-    //}
+    else if(pkg.find("STARTGAME") != std::string::npos)
+    {
+        int roomId = std::stoi(pkg.substr(strlen("STARTGAME") + 1));
+        printf("%d\n", roomId);
+        Game *new_game = RoomMgrSin::instance().StartGame(roomId);
+        if(new_game == NULL)
+        {
+            printf("ERROR: start game error!\n");
+        }
+
+        return "";
+        //start_game(sock, roomId);
+    }
     //else if(pkg.find("UPDATEGAME") != std::string::npos)
     //{
     //    //send message to other clients
