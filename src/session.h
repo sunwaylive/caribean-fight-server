@@ -34,53 +34,77 @@ typedef struct SeqInfo
 class Session
 {
 public:
-    Session(SocketPtr sock_ptr) : m_sock_ptr(sock_ptr){}
-
-    SocketPtr GetSocketPtr() const { return m_sock_ptr; }
-    string HandlePkg(std::string pkg);
-
-    /******************/
-    ~Session()
+    Session(boost::asio::io_service& io_service)
+            : m_socket(io_service)
     {
-        Reset();
+        m_socket_ptr = SocketPtr(&m_socket);
     }
+
+    tcp::socket& Socket()
+    {
+        return m_socket;
+    }
+
+    void Start()
+    {
+        m_socket.async_read_some(boost::asio::buffer(m_pkg, MAX_PKG_SIZE),
+                                boost::bind(&Session::HandleRead, this,
+                                            boost::asio::placeholders::error,
+                                            boost::asio::placeholders::bytes_transferred));
+    }
+
+    void HandleRead(const boost::system::error_code& error, size_t bytes_transferred)
+    {
+        if (!error)
+        {
+            cout<<"Trace: recvd: " << std::string(m_pkg) <<std::endl;
+            std::string rsp = this->HandlePkg(std::string(m_pkg));
+            cout<<"Trace: rsp: " <<rsp <<std::endl;
+
+            boost::asio::async_write(m_socket,
+                                     boost::asio::buffer(rsp, rsp.length()),
+                                     boost::bind(&Session::HandleWrite, this,
+                                                 boost::asio::placeholders::error));
+        }
+        else
+        {
+            delete this;
+        }
+    }
+
+    void HandleWrite(const boost::system::error_code& error)
+    {
+        if (!error)
+        {
+            m_socket.async_read_some(boost::asio::buffer(m_pkg, MAX_PKG_SIZE),
+                                    boost::bind(&Session::HandleRead, this,
+                                                boost::asio::placeholders::error,
+                                                boost::asio::placeholders::bytes_transferred));
+        }
+        else
+        {
+            delete this;
+        }
+    }
+
+public:
+    string HandlePkg(std::string pkg);
 
     void SetId(std::string id) { m_sid = id; }
     std::string GetId() const { return m_sid; }
 
-    //清楚session的状态，用于new round
-    void Clear();
-
-    //释放时及时重置
-    void Reset();
-
-public:
-    //发送缓存的数据
-    void FlushCache(FrameMgr *frame_mgr);
-
-    //操作缓存的action, 成功返回0, 非0表示弹出失败，可能action队列空了
-    int PopAction(Action& action);
-    size_t GetRemainActionCnt() { return m_action_cache.size(); }
+    SocketPtr GetSocketPtr() { return m_socket_ptr; }
 
 private:
+    //they are the same thing
+    tcp::socket m_socket;
+    SocketPtr m_socket_ptr;
+
+    enum { MAX_PKG_SIZE = 1024 };
+    char m_pkg[MAX_PKG_SIZE];
+
     std::string m_sid; //session id
     unsigned m_rid;    //room id
-    unsigned m_gid;    //game id
-
-    SocketPtr m_sock_ptr;
-    char m_pkg[kMaxPkgSize];
-
-    RingQueue<Action, 100> m_action_cache; //100 must be enough for a normal player
-    /******************/
-    int m_client_seq;
-    int m_client_ack;
-    int m_server_seq; //每次调用Send()借口发送时，都会是server_seq加1
-    int m_sock_fd;
-    char m_key[kMaxKeySize + 1]; //用于加密的key
-
-    SeqInfo m_ack_info; //已经被确认的最新(大)的发送序列信息
-
-    int m_use_check_sum; //是否开启校验报的checksum, 如果开启，最后两个字节为校验和
 };
 
 #endif

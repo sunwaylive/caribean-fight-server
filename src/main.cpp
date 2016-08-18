@@ -12,216 +12,74 @@
 #include "session_mgr.h"
 #include "room_mgr.h"
 
-/*************************************************************************/
-const std::string SERVER_IP = "119.29.25.185";
-const std::string PORT = "3008";
-const std::string FSP_PORT = "3009";
-
-/*************************************************************************/
-//void start_game(SocketPtr sock, int roomId)
-//{
-//    std::cout<<"************start game***************************" <<std::endl;
-//    Room *room = find_room(roomId);
-//    if(room == NULL)
-//    {
-//        std::cerr<<"Error: wrong room id: " <<roomId <<std::endl;
-//        return;
-//    }
-//
-//    string toSend;
-//    string toSendEnd;
-//
-//    auto& player_list = room->player_list;
-//    if(player_list.size() == 2)
-//    {
-//        toSendEnd = TWO_PLAYER_START_GAME_STRING;
-//    }
-//    else if(player_list.size() == 4)
-//    {
-//        toSendEnd = FOUR_PLAYER_START_GAME_STRING;
-//    }
-//
-//    int player_idx = 0;
-//    //each player
-//    for(auto player_iter = player_list.begin(); player_iter != player_list.end(); ++player_iter)
-//    {
-//        //STARTGAME#max_players_num#my_idx#0,A#1,A#2,B#3,B\n
-//        toSend = "STARTGAME#" + std::to_string(player_list.size()) + "#"
-//                 + std::to_string(player_idx) +"#" + toSendEnd + "\n";
-//
-//        boost::asio::write(**player_iter, boost::asio::buffer(toSend, toSend.length()));
-//        std::cout<<"send to client "<<player_idx++<<": " <<toSend <<std::endl;
-//    }
-//
-//    std::cout<<"***************************************" <<std::endl;
-//}
-//
-//void update_game(SocketPtr sock, int roomId, std::string msg)
-//{
-//    //std::cout<<"************update game***************************" <<std::endl;
-//    Room *room = find_room(roomId);
-//    if(room == NULL)
-//    {
-//        std::cerr<<"Error: wrong room id: " <<roomId <<std::endl;
-//        return;
-//    }
-//
-//    //broadcast to all other players in the room
-//    for(auto iter = room->player_list.begin(); iter != room->player_list.end(); ++iter)
-//    {
-//        if(sock == *iter)
-//        {
-//            //self
-//            continue;
-//        }
-//
-//        boost::asio::write(**iter, boost::asio::buffer(msg, msg.length()));
-//    }
-//
-//    //std::cout<<"***************************************" <<std::endl;
-//}
-//
-//void end_game(SocketPtr sock, int roomId)
-//{
-//
-//}
-//
-//void handle_message(SocketPtr sock, std::string msg)
-//{
-//    std::cout<<"I have received msg: " <<msg <<std::endl;
-//    if(msg.find("CREATEROOM") != std::string::npos)
-//    {
-//       int playerNum = std::stoi(msg.substr(strlen("CREATEROOM") + 1));
-//       create_room(sock, playerNum);
-//    }
-//    else if(msg.find("LISTROOM") != std::string::npos)
-//    {
-//       list_room(sock);
-//    }
-//    else if(msg.find("JOINROOM") != std::string::npos)
-//    {
-//        int roomId = std::stoi(msg.substr(strlen("JOINROOM") + 1));
-//        join_room(sock, roomId);
-//    }
-//    else if(msg.find("STARTGAME") != std::string::npos)
-//    {
-//        int roomId = std::stoi(msg.substr(strlen("STARTGAME") + 1));
-//        start_game(sock, roomId);
-//    }
-//    else if(msg.find("UPDATEGAME") != std::string::npos)
-//    {
-//        //send message to other clients
-//        int roomId = std::stoi(msg.substr(strlen("UPDATEGAME") + 1));
-//        update_game(sock, roomId, msg);
-//    }
-//}
-
-//when a new player connected, a new thread will be launched running this function
-void client_session(Session *sess)
+class Server
 {
-    std::cout<<" one client has connected to me!" <<std::endl;
-    SocketPtr sock = sess->GetSocketPtr();
-    try
+public:
+    Server(boost::asio::io_service& io_service, short port)
+        : m_io_service(io_service),
+        m_acceptor(io_service, tcp::endpoint(tcp::v4(), port))
     {
-        for(;;)
-        {
-            char data[kMaxPkgSize] = "";
-            boost::system::error_code error;
-            sock->read_some(boost::asio::buffer(data), error);
-            if(error == boost::asio::error::eof)
-                break; //connection closed cleanly by peer
-            else if(error)
-                throw boost::system::system_error(error); //some other error
+        Session* new_session = new Session(m_io_service);
 
-            std::string rsp = sess->HandlePkg(std::string(data));
-            if(rsp.length() > 0)
+        m_acceptor.async_accept(new_session->Socket(),
+                               boost::bind(&Server::HandleAccept, this, new_session,
+                                           boost::asio::placeholders::error));
+    }
+
+    void HandleAccept(Session* new_session,
+                       const boost::system::error_code& error)
+    {
+        if (!error)
+        {
+            if(new_session != NULL)
             {
-                //the length must be right, because write() will wait until all data is write to the pipe
-                boost::asio::write(*sock, boost::asio::buffer(rsp.c_str(), rsp.length()), error);
+                new_session->SetId(new_session->Socket().remote_endpoint().address().to_string());
+                cout<<new_session->GetId() <<std::endl;
+                cout<<new_session->GetSocketPtr()->remote_endpoint().address().to_string() <<std::endl;
+
+                SessionMgrSin::instance().AddSession(new_session);
+
+                new_session->Start();
             }
+
+            new_session = new Session(m_io_service);
+            m_acceptor.async_accept(new_session->Socket(),
+                                   boost::bind(&Server::HandleAccept, this, new_session,
+                                               boost::asio::placeholders::error));
         }
-    }
-    catch(std::exception &e)
-    {
-        std::cerr <<"Exception in thread: "<<e.what() <<std::endl;
-    }
-}
-
-void server(boost::asio::io_service &io_service, unsigned short port)
-{
-    tcp::acceptor acp(io_service, tcp::endpoint(tcp::v4(), port));
-    for(;;)
-    {
-        SocketPtr sock_ptr(new tcp::socket(io_service));
-        acp.accept(*sock_ptr);
-
-        //when a new player connected, add a new session
-        //std::string sock_ip = boost::lexical_cast<std::string>(sock_ptr->remote_endpoint());
-        std::string sock_ip = sock_ptr->remote_endpoint().address().to_string();
-
-        Session *sess = SessionMgrSin::instance().AddSession(sock_ip, sock_ptr);
-        if(sess == NULL)
+        else
         {
-            continue;
+            delete new_session;
         }
-
-        boost::thread(boost::bind(client_session, sess));
-
-        //after std::move the sock will be empty
-        //std::thread(functionPtr, args)
-
-        //std::thread(session, std::move(sock)).detach();
-        //after seperate the socket into a new thread, the main thread will go on listening to clients
     }
-}
 
-void fsp_server(boost::asio::io_service &io_service, unsigned short port)
-{
-    printf("Enter fsp server\n");
-    tcp::acceptor acp(io_service, tcp::endpoint(tcp::v4(), port));
-    for(;;)
-    {
-        SocketPtr sock_ptr(new tcp::socket(io_service));
-        acp.accept(*sock_ptr);
-
-        //when a player connect by fsp port, he must have been in the room
-        std::string sock_ip = sock_ptr->remote_endpoint().address().to_string();
-        Session *sess = SessionMgrSin::instance().GetSession(sock_ip);
-        if(sess == NULL)
-        {
-            continue;
-        }
-
-
-    }
-}
+private:
+  boost::asio::io_service& m_io_service;
+  tcp::acceptor m_acceptor;
+};
 
 int main(int argc, char* argv[])
 {
-    //init();
-
-    try
+  try
+  {
+    if (argc != 2)
     {
-        std::string server_port = PORT;
-        if(argc >= 2)
-        {
-             server_port = argv[1];
-        }else
-        {
-            std::cout<<"Use default port: " << PORT <<std::endl;
-        }
-
-        boost::asio::io_service io_service;
-        server(io_service, std::atoi(server_port.c_str()));
-
-        //create a fsp server for pvp frame synchronize protocol in game
-        std::string fsp_server_port = FSP_PORT;
-        fsp_server(io_service, std::atoi(fsp_server_port.c_str()));
-    }
-    catch(std::exception &e)
-    {
-        std::cerr<< "Exception: " <<e.what() <<"\n";
+      std::cerr << "Usage: async_tcp_echo_server <port>\n";
+      return 1;
     }
 
-    return 0;
+    boost::asio::io_service io_service;
+
+    using namespace std; // For atoi.
+    Server s(io_service, atoi(argv[1]));
+
+    io_service.run();
+  }
+  catch (std::exception& e)
+  {
+    std::cerr << "Exception: " << e.what() << "\n";
+  }
+
+  return 0;
 }
+

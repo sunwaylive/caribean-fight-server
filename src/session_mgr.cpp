@@ -13,24 +13,24 @@ Session* SessionMgr::GetSession(std::string sid) const
     }
 }
 
-Session* SessionMgr::AddSession(std::string sid, SocketPtr sock_ptr)
+Session* SessionMgr::AddSession(Session *sess)
 {
+    if(sess == NULL)
+    {
+        return NULL;
+    }
+
+    std::string sid = sess->GetId();
     auto iter = m_session_map.find(sid);
     if(iter != m_session_map.end())
     {
         std::cout<<"ERROR: session already exist!" <<std::endl;
         return iter->second;
     }
-    else
-    {
-        //create a new session, and add it to map
-        std::cout<<"TRACE: a new session added." <<std::endl;
-        Session *s = new Session(sock_ptr);
-        s->SetId(sid);
 
-        m_session_map.insert({sid, s});
-        return s;
-    }
+    m_session_map.insert({sid, sess});
+    std::cout<<"TRACE: a new session added!" <<std::endl;
+    return sess;
 }
 
 void SessionMgr::DelSession(std::string sid)

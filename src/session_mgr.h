@@ -14,7 +14,7 @@ class SessionMgr
 {
 public:
     Session* GetSession(std::string sid) const;
-    Session* AddSession(std::string sid, SocketPtr sock_ptr);
+    Session* AddSession(Session *sess);
     void DelSession(std::string sid);
 
     size_t Size() const { return m_session_map.size(); }
