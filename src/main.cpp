@@ -34,9 +34,9 @@ public:
             if(new_session != NULL)
             {
                 new_session->SetId(new_session->Socket().remote_endpoint().address().to_string());
-                cout<<new_session->GetId() <<std::endl;
-                cout<<new_session->GetSocketPtr()->remote_endpoint().address().to_string() <<std::endl;
 
+                cout << "aa " << new_session->GetRId() <<std::endl;
+                cout<<"A new Client Connected to Server: " <<new_session->GetSocketPtr()->remote_endpoint().address().to_string() <<std::endl;
                 SessionMgrSin::instance().AddSession(new_session);
 
                 new_session->Start();

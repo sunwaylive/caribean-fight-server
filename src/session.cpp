@@ -10,13 +10,14 @@ string Session::HandlePkg(std::string pkg)
     {
         if(m_rid != 0)
         {
-            printf("ERROR: already in a room!\n");
+            printf("m_rid: %d, ERROR: already in a room!\n", m_rid);
             return "";
         }
 
         int playerNum = std::stoi(pkg.substr(strlen("CREATEROOM") + 1));
         Room *new_room = RoomMgrSin::instance().CreateRoom(this, playerNum);
         m_rid = new_room->GetId();
+        printf("after create room, m_rid: %d\n", m_rid);
 
         std::string to_send = "CREATEROOM@" + std::to_string(new_room->GetId()) + "\n";
         return to_send;
