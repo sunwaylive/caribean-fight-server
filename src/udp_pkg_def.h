@@ -1,5 +1,6 @@
 #ifndef _UDP_PKG_DEF_H_
 #define _UDP_PKG_DEF_H_
+
 #include <stdint.h>
 #pragma pack(1)
 
@@ -38,5 +39,7 @@ typedef struct SendFrame
     uint8_t action_len;
     SendAction actions[0];
 }SendFrame;
+
+#pragma pack()
 
 #endif

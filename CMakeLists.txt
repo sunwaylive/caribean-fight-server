@@ -24,7 +24,7 @@ set (SERVER_LIBS
                 libboost_system.a
                 libboost_thread.a)
 
-set (CMAKE_CXX_FLAGS "-Wall -g -std=c++11 -Werror")
+set (CMAKE_CXX_FLAGS "-Wall -ggdb3 -std=c++11 -Werror")
 
 
 set (EXECUTABLE_OUTPUT_PATH ${PROJECT_SOURCE_DIR}/bin)

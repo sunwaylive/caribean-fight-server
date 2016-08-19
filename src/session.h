@@ -35,9 +35,9 @@ class Session
 {
 public:
     Session(boost::asio::io_service& io_service)
-            : m_socket(io_service), m_rid(0), m_sid("")
+            : m_socket(io_service)
     {
-        m_socket_ptr = SocketPtr(&m_socket);
+        m_rid = 0;
     }
 
     tcp::socket& Socket()
@@ -57,17 +57,17 @@ public:
     {
         if (!error)
         {
-            cout<<"Trace: recvd: " << std::string(m_pkg) <<std::endl;
-            std::string rsp = this->HandlePkg(std::string(m_pkg));
-            cout<<"Trace: rsp: " <<rsp <<std::endl;
+            m_rsp = this->HandlePkg(m_pkg);
 
             boost::asio::async_write(m_socket,
-                                     boost::asio::buffer(rsp, rsp.length()),
+                                     boost::asio::buffer(m_rsp, m_rsp.length()),
                                      boost::bind(&Session::HandleWrite, this,
                                                  boost::asio::placeholders::error));
         }
         else
         {
+            cout<<"delete this" <<endl;
+            cout<< "before delete " <<this << endl;
             delete this;
         }
     }
@@ -92,19 +92,23 @@ public:
 
     void SetId(std::string id) { m_sid = id; }
     std::string GetId() const { return m_sid; }
-    unsigned GetRId() const {return m_rid; }
+    unsigned int GetRId() const {return m_rid; }
     SocketPtr GetSocketPtr() { return m_socket_ptr; }
 
 private:
     //they are the same thing
+
     tcp::socket m_socket;
+
+    unsigned int m_rid;    //room id
+
     SocketPtr m_socket_ptr;
 
-    unsigned m_rid;    //room id
-    enum { MAX_PKG_SIZE = 1024 };
-    char m_pkg[MAX_PKG_SIZE];
-
+    enum { MAX_PKG_SIZE = 1024*10 };
+    char m_pkg[MAX_PKG_SIZE ];
+    std::string m_rsp;
     std::string m_sid; //session id
+
 };
 
 #endif

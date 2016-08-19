@@ -34,17 +34,14 @@ public:
             if(new_session != NULL)
             {
                 new_session->SetId(new_session->Socket().remote_endpoint().address().to_string());
-
-                cout << "aa " << new_session->GetRId() <<std::endl;
-                cout<<"A new Client Connected to Server: " <<new_session->GetSocketPtr()->remote_endpoint().address().to_string() <<std::endl;
                 SessionMgrSin::instance().AddSession(new_session);
 
                 new_session->Start();
             }
 
-            new_session = new Session(m_io_service);
-            m_acceptor.async_accept(new_session->Socket(),
-                                   boost::bind(&Server::HandleAccept, this, new_session,
+            Session *new_session_2 = new Session(m_io_service);
+            m_acceptor.async_accept(new_session_2->Socket(),
+                                   boost::bind(&Server::HandleAccept, this, new_session_2,
                                                boost::asio::placeholders::error));
         }
         else
