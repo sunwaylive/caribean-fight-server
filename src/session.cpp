@@ -57,6 +57,7 @@ string Session::HandlePkg(std::string pkg)
             printf("ERROR: start game error!\n");
         }
 
+        //BUG:  set rsp string
         return "";
         //start_game(sock, roomId);
     }
@@ -70,43 +71,3 @@ string Session::HandlePkg(std::string pkg)
 
     return "";
 }
-
-//void Session::Recv()
-//{
-//    try
-//    {
-//        printf("before for\n");
-//        for(;;)
-//        {
-//            printf("pkg size: %d\n", kMaxPkgSize);
-//
-//            boost::system::error_code error;
-//            if(m_sock_ptr == NULL)
-//            {
-//            }
-//            size_t length = m_sock_ptr->read_some(boost::asio::buffer(m_pkg), error);
-//            printf("%s\n", m_pkg);
-//
-//            if(error == boost::asio::error::eof)
-//            {
-//                printf("eof\n");
-//                break; //connection closed cleanly by peer
-//            }
-//            else if(error)
-//            {
-//                printf("error\n");
-//                std::cout<<"value: " <<error.value()<< std::endl;
-//                std::cout<<"message: " <<error.message()<< std::endl;
-//                throw boost::system::system_error(error); //some other error
-//            }
-//
-//            std::cout<<"recv from client length: " << length <<std::endl;
-//            //handle_message(sock, std::string(data));
-//            //boost::asio::write(sock, boost::asio::buffer(data, length));
-//        }
-//    }
-//    catch(std::exception &e)
-//    {
-//        std::cerr <<"Exception in thread: "<<e.what() <<std::endl;
-//    }
-//}

@@ -23,7 +23,10 @@ Game* GameMgr::CreateGame(Room *r)
 
     r->SetFightingState(true);
     Game *new_game = new Game(r->GetId(), r->GetPlayerList());
-    m_game_map.insert({m_g_game_id++, new_game});
+    new_game->SetGameId(m_g_game_id++);
+    printf("TRACE: New game %d started!\n", new_game->GetGameId());
+
+    m_game_map.insert({new_game->GetGameId(), new_game});
 
     //game start
     new_game->SendStartGameNtfToAll();

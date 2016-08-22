@@ -35,7 +35,7 @@ class Session
 {
 public:
     Session(boost::asio::io_service& io_service)
-            : m_socket(io_service)
+            : m_socket(io_service), m_socket_ptr(&m_socket)
     {
         m_rid = 0;
     }
@@ -97,18 +97,15 @@ public:
 
 private:
     //they are the same thing
-
     tcp::socket m_socket;
+    SocketPtr m_socket_ptr;
 
     unsigned int m_rid;    //room id
-
-    SocketPtr m_socket_ptr;
 
     enum { MAX_PKG_SIZE = 1024*10 };
     char m_pkg[MAX_PKG_SIZE ];
     std::string m_rsp;
     std::string m_sid; //session id
-
 };
 
 #endif

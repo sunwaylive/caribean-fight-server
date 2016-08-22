@@ -10,7 +10,9 @@ class Room
 {
 public:
     Room(Session *creator, int max_player_num)
-        : m_max_player_num(max_player_num)
+        : m_rid(0), 
+          m_max_player_num(max_player_num),
+          m_is_fighting(false)
     {
         m_player_list.push_back(creator);
     }

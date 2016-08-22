@@ -28,14 +28,27 @@ void Game::SendStartGameNtfToAll()
     {
         SocketPtr sock = (*session_iter)->GetSocketPtr();
         if(sock == NULL)
+        {
+            printf("ERROR: player socket addre NULL!\n");
             return;
-
-        std::cout<<"send to client "<<player_idx<<": " <<to_send <<std::endl;
+        }
 
         //STARTGAME#max_players_num#my_idx#0,A#1,A#2,B#3,B\n
         to_send = "STARTGAME#" + std::to_string(m_player_list->size()) + "#"
             + std::to_string(player_idx++) +"#" + to_send_end + "\n";
 
-        boost::asio::write(*sock, boost::asio::buffer(to_send, to_send.length()));
+        boost::asio::async_write(*sock,
+                                     boost::asio::buffer(to_send, to_send.length()),
+                                     boost::bind(&Game::HandleWrite, this,
+                                                 boost::asio::placeholders::error));
+    }
+}
+
+void Game::HandleWrite(const boost::system::error_code& error)
+{
+    if(error)
+    {
+        printf("ERROR: SendStarGameNtfToAll Error!");
+        return;
     }
 }
