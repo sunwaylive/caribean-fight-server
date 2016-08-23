@@ -1,6 +1,91 @@
 #include "session.h"
 #include <boost/asio.hpp>
 
+
+/**************************************************************/
+void Session::Start()
+{
+    m_socket.async_read_some(boost::asio::buffer(m_pkg, MAX_PKG_SIZE),
+            boost::bind(&Session::HandleRead, this,
+                boost::asio::placeholders::error,
+                boost::asio::placeholders::bytes_transferred));
+}
+
+void Session::HandleRead(const boost::system::error_code& error, size_t bytes_transferred)
+{
+    if (!error)
+    {
+        m_rsp = this->HandlePkg(m_pkg);
+
+        boost::asio::async_write(m_socket,
+                boost::asio::buffer(m_rsp, m_rsp.length()),
+                boost::bind(&Session::HandleWrite, this,
+                    boost::asio::placeholders::error));
+    }
+    else
+    {
+        cout<<"delete this" <<endl;
+        cout<< "before delete " <<this << endl;
+        delete this;
+    }
+}
+
+void Session::HandleWrite(const boost::system::error_code& error)
+{
+    if (!error)
+    {
+        m_socket.async_read_some(boost::asio::buffer(m_pkg, MAX_PKG_SIZE),
+                boost::bind(&Session::HandleRead, this,
+                    boost::asio::placeholders::error,
+                    boost::asio::placeholders::bytes_transferred));
+    }
+    else
+    {
+        delete this;
+    }
+}
+
+/**************************************************************/
+void Session::FspStart()
+{
+    m_fsp_socket.async_read_some(boost::asio::buffer(m_fsp_pkg, MAX_PKG_SIZE),
+            boost::bind(&Session::FspHandleRead, this,
+                boost::asio::placeholders::error,
+                boost::asio::placeholders::bytes_transferred));
+}
+
+void Session::FspHandleRead(const boost::system::error_code& error, size_t bytes_transferred)
+{
+    if (!error)
+    {
+        m_fsp_rsp = this->HandlePkg(m_fsp_pkg);
+
+        boost::asio::async_write(m_fsp_socket,
+                boost::asio::buffer(m_fsp_rsp, m_fsp_rsp.length()),
+                boost::bind(&Session::FspHandleWrite, this,
+                    boost::asio::placeholders::error));
+    }
+    else
+    {
+        delete this;
+    }
+}
+
+void Session::FspHandleWrite(const boost::system::error_code& error)
+{
+    if (!error)
+    {
+        m_fsp_socket.async_read_some(boost::asio::buffer(m_fsp_pkg, MAX_PKG_SIZE),
+                boost::bind(&Session::FspHandleRead, this,
+                    boost::asio::placeholders::error,
+                    boost::asio::placeholders::bytes_transferred));
+    }
+    else
+    {
+        delete this;
+    }
+}
+
 /**************************************************************/
 string Session::HandlePkg(std::string pkg)
 {

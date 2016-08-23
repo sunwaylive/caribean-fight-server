@@ -35,9 +35,10 @@ class Session
 {
 public:
     Session(boost::asio::io_service& io_service)
-            : m_socket(io_service), m_socket_ptr(&m_socket)
+            : m_socket(io_service), m_socket_ptr(&m_socket), 
+              m_fsp_socket(io_service),
+              m_rid(0)
     {
-        m_rid = 0;
     }
 
     tcp::socket& Socket()
@@ -45,47 +46,18 @@ public:
         return m_socket;
     }
 
-    void Start()
+    tcp::socket& FspSocket()
     {
-        m_socket.async_read_some(boost::asio::buffer(m_pkg, MAX_PKG_SIZE),
-                                boost::bind(&Session::HandleRead, this,
-                                            boost::asio::placeholders::error,
-                                            boost::asio::placeholders::bytes_transferred));
+        return m_fsp_socket;
     }
 
-    void HandleRead(const boost::system::error_code& error, size_t bytes_transferred)
-    {
-        if (!error)
-        {
-            m_rsp = this->HandlePkg(m_pkg);
+   void Start();
+   void HandleRead(const boost::system::error_code& error, size_t bytes_transferred);
+   void HandleWrite(const boost::system::error_code& error);
 
-            boost::asio::async_write(m_socket,
-                                     boost::asio::buffer(m_rsp, m_rsp.length()),
-                                     boost::bind(&Session::HandleWrite, this,
-                                                 boost::asio::placeholders::error));
-        }
-        else
-        {
-            cout<<"delete this" <<endl;
-            cout<< "before delete " <<this << endl;
-            delete this;
-        }
-    }
-
-    void HandleWrite(const boost::system::error_code& error)
-    {
-        if (!error)
-        {
-            m_socket.async_read_some(boost::asio::buffer(m_pkg, MAX_PKG_SIZE),
-                                    boost::bind(&Session::HandleRead, this,
-                                                boost::asio::placeholders::error,
-                                                boost::asio::placeholders::bytes_transferred));
-        }
-        else
-        {
-            delete this;
-        }
-    }
+   void FspStart();
+   void FspHandleRead(const boost::system::error_code& error, size_t bytes_transferred);
+   void FspHandleWrite(const boost::system::error_code& error);
 
 public:
     string HandlePkg(std::string pkg);
@@ -100,11 +72,17 @@ private:
     tcp::socket m_socket;
     SocketPtr m_socket_ptr;
 
+    tcp::socket m_fsp_socket;
+
     unsigned int m_rid;    //room id
 
     enum { MAX_PKG_SIZE = 1024*10 };
     char m_pkg[MAX_PKG_SIZE ];
+    char m_fsp_pkg[MAX_PKG_SIZE ];
+
     std::string m_rsp;
+    std::string m_fsp_rsp;
+
     std::string m_sid; //session id
 };
 
