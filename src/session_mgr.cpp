@@ -21,6 +21,8 @@ Session* SessionMgr::AddSession(Session *sess)
     }
 
     std::string sid = sess->GetId();
+    cout<<"TRACE: SessionMgr::AddSession sid: " <<sid <<endl;
+
     auto iter = m_session_map.find(sid);
     if(iter != m_session_map.end())
     {

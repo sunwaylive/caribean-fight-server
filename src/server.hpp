@@ -41,16 +41,27 @@ public:
         {
             if(new_session != NULL)
             {
-                new_session->SetId(new_session->Socket().remote_endpoint().address().to_string());
+                //127.0.0.1
+                //new_session->SetId(new_session->Socket().remote_endpoint().address().to_string());
+                
+                std::string sock_ip_port = boost::lexical_cast<std::string>(new_session->Socket().remote_endpoint());
+                cout<<sock_ip_port <<endl;
+
+                new_session->SetId(sock_ip_port);
                 SessionMgrSin::instance().AddSession(new_session);
 
+                printf("HandleAccept Start()\n");
                 new_session->Start();
             }
 
             Session *new_session_2 = new Session(m_io_service);
             m_acceptor.async_accept(new_session_2->Socket(),
-                    boost::bind(&Server::HandleAccept, this, new_session_2,
-                        boost::asio::placeholders::error));
+                                    boost::bind(&Server::HandleAccept, this, new_session_2,
+                                                boost::asio::placeholders::error));
+
+            m_fsp_acceptor.async_accept(new_session_2->FspSocket(),
+                                    boost::bind(&Server::FspHandleAccept, this, new_session_2,
+                                                boost::asio::placeholders::error));
         }
         else
         {

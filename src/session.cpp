@@ -89,8 +89,6 @@ void Session::FspHandleWrite(const boost::system::error_code& error)
 /**************************************************************/
 string Session::HandlePkg(std::string pkg)
 {
-    std::cout<<"I have received pkg: " <<pkg <<std::endl;
-
     if(pkg.find("CREATEROOM") != std::string::npos)
     {
         if(m_rid != 0)
@@ -102,7 +100,6 @@ string Session::HandlePkg(std::string pkg)
         int playerNum = std::stoi(pkg.substr(strlen("CREATEROOM") + 1));
         Room *new_room = RoomMgrSin::instance().CreateRoom(this, playerNum);
         m_rid = new_room->GetId();
-        printf("after create room, m_rid: %d\n", m_rid);
 
         std::string to_send = "CREATEROOM@" + std::to_string(new_room->GetId()) + "\n";
         return to_send;
@@ -134,8 +131,9 @@ string Session::HandlePkg(std::string pkg)
     }
     else if(pkg.find("STARTGAME") != std::string::npos)
     {
+        std::cout<<"I have received pkg: " <<pkg <<std::endl;
         int roomId = std::stoi(pkg.substr(strlen("STARTGAME") + 1));
-        printf("%d\n", roomId);
+        printf("start game %d\n", roomId);
         Game *new_game = RoomMgrSin::instance().StartGame(roomId);
         if(new_game == NULL)
         {

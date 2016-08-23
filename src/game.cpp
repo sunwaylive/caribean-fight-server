@@ -23,28 +23,31 @@ void Game::SendStartGameNtfToAll()
     }
 
     int player_idx = 0;
+    printf("player num: %lu\n", m_player_list->size());
+
     //each player
     for(auto session_iter = m_player_list->begin(); session_iter != m_player_list->end(); ++session_iter)
     {
-        //SocketPtr sock = (*session_iter)->GetSocketPtr();
         tcp::socket& sock = (*session_iter)->FspSocket();
 
         //STARTGAME#max_players_num#my_idx#0,A#1,A#2,B#3,B\n
         to_send = "STARTGAME#" + std::to_string(m_player_list->size()) + "#"
             + std::to_string(player_idx++) +"#" + to_send_end + "\n";
-
-        boost::asio::async_write(sock,
-                                     boost::asio::buffer(to_send, to_send.length()),
-                                     boost::bind(&Game::HandleWrite, this,
-                                                 boost::asio::placeholders::error));
+        cout<<"player index: " << player_idx <<" to send: " << to_send <<endl;
+        boost::asio::async_write(sock,boost::asio::buffer(to_send, to_send.length()),
+                                      boost::bind(&Game::HandleWrite, this,
+                                                  boost::asio::placeholders::error));
     }
 }
 
 void Game::HandleWrite(const boost::system::error_code& error)
 {
-    if(error)
+    if(!error)
     {
-        printf("ERROR: SendStarGameNtfToAll Error!");
+    }
+    else
+    {
+        cout<<"ERROR: SendStartGameNtfToAll " << error.message() <<endl;
         return;
     }
 }
