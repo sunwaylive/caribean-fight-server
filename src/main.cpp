@@ -11,51 +11,7 @@
 #include "common_def.h"
 #include "session_mgr.h"
 #include "room_mgr.h"
-#include "server.h"
-
-
-//class Server
-//{
-//public:
-//    Server(boost::asio::io_service& io_service, short port)
-//        : m_io_service(io_service),
-//        m_acceptor(io_service, tcp::endpoint(tcp::v4(), port))
-//    {
-//        Session* new_session = new Session(m_io_service);
-//
-//        m_acceptor.async_accept(new_session->Socket(),
-//                               boost::bind(&Server::HandleAccept, this, new_session,
-//                                           boost::asio::placeholders::error));
-//    }
-//
-//    void HandleAccept(Session* new_session,
-//                       const boost::system::error_code& error)
-//    {
-//        if (!error)
-//        {
-//            if(new_session != NULL)
-//            {
-//                new_session->SetId(new_session->Socket().remote_endpoint().address().to_string());
-//                SessionMgrSin::instance().AddSession(new_session);
-//
-//                new_session->Start();
-//            }
-//
-//            Session *new_session_2 = new Session(m_io_service);
-//            m_acceptor.async_accept(new_session_2->Socket(),
-//                                   boost::bind(&Server::HandleAccept, this, new_session_2,
-//                                               boost::asio::placeholders::error));
-//        }
-//        else
-//        {
-//            delete new_session;
-//        }
-//    }
-//
-//private:
-//  boost::asio::io_service& m_io_service;
-//  tcp::acceptor m_acceptor;
-//};
+#include "server.hpp"
 
 int main(int argc, char* argv[])
 {

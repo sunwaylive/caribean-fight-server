@@ -1,6 +1,6 @@
 set (FILES
           main.cpp
-          server.cpp
+          server.hpp
           session.cpp
           session_mgr.cpp
           room.cpp
