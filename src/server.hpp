@@ -1,5 +1,5 @@
-#ifndef _SERVER_H_
-#define _SERVER_H_
+#ifndef _SERVER_HPP_
+#define _SERVER_HPP_
 
 #include <utility>
 #include <iostream>
@@ -28,24 +28,13 @@ public:
         m_acceptor.async_accept(new_session->Socket(),
                                 boost::bind(&Server::HandleAccept, this, new_session,
                                             boost::asio::placeholders::error));
-        //cout<<fsp_port <<endl;
+
         m_fsp_acceptor.async_accept(new_session->FspSocket(),
                                     boost::bind(&Server::FspHandleAccept, this, new_session,
                                                 boost::asio::placeholders::error));
     }
 
-    void FspHandleAccept(Session *new_session, const boost::system::error_code &error)
-    {
-        if(!error)
-        {
-        }
-        else
-        {
-            printf("ERROR: Fsp Socket establish failed!\n");
-            return;
-        }
-    }
-
+    
     void HandleAccept(Session* new_session, const boost::system::error_code& error)
     {
         if (!error)
@@ -66,6 +55,23 @@ public:
         else
         {
             delete new_session;
+        }
+    }
+
+    void FspHandleAccept(Session *session, const boost::system::error_code &error)
+    {
+        if(!error)
+        {
+            if(session != NULL)
+            {
+                printf("FspHandleAccept FspStart()\n");
+                session->FspStart(); 
+            }
+        }
+        else
+        {
+            printf("ERROR: Fsp Socket establish failed!\n");
+            return;
         }
     }
 
