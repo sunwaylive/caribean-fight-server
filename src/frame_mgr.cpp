@@ -1,6 +1,25 @@
 #include "frame_mgr.h"
 #include "frame.h"
 
+
+/**************Ssp********************/
+int FrameMgr::AddState(std::string state)
+{
+    m_state_buf += state;
+    return 0;
+}
+
+std::string FrameMgr::GetState()
+{
+    return m_state_buf;
+}
+
+void FrameMgr::ClearState()
+{
+    m_state_buf.clear();
+} 
+
+/**************Fsp********************/
 int FrameMgr::AddFrame(const Frame *frame)
 {
     size_t free_len = GetFreeSize();
@@ -15,7 +34,7 @@ int FrameMgr::AddFrame(const Frame *frame)
     if(m_is_prev_frame_empty && frame->IsEmpty())
     {
         char *last_frame = m_frame_buf + m_last_frame_pos;
-        uint16_t last_frame_id = ntohs(*(uint16_t*)(last_frame));
+        //uint16_t last_frame_id = ntohs(*(uint16_t*)(last_frame));
 
         uint16_t *new_frame_id = (uint16_t*) last_frame;
         *new_frame_id = htons(frame->GetFrameId());
@@ -92,7 +111,7 @@ const char* FrameMgr::GetFrameBufBegin(int max_frame_id, size_t used) const
     }
 }
 
-const char* FrameMgr::GetFrameBufEnd(const char* buf)
+const char* FrameMgr::GetFrameBufEnd(const char* buf) const
 {
     size_t total_remain = (m_frame_buf + m_used) - buf;
     if(total_remain <= kUdpSegmentSize)

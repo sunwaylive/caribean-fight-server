@@ -6,4 +6,6 @@ set (FILES
           room.cpp
           room_mgr.cpp
           game.cpp
-          game_mgr.cpp)
+          game_mgr.cpp
+          frame.cpp
+          frame_mgr.cpp)

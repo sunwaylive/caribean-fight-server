@@ -27,4 +27,6 @@ static const int kUdpPkgHeadSize = 20 + 8;
 static const int kMaxSegmentSize =  2 * kMaxFrameBufInGame / kUdpSegmentSize; //这个用kMaxSegmentCnt更好理解一点， bug
 
 static const int kMaxKeySize = 16;
+
+static const int kPickActionEveryPlayer = 5; // every time pick 5 action from each player 
 #endif

@@ -30,7 +30,7 @@ public:
     int GetFrameId() const { return m_frame_id; }
 
     //action为玩家在此帧内的所有操作
-    int AddAction(unsigned vkey, unsigned arg, unsigned role_idx);
+    int AddAction(int vkey, int arg, int role_idx);
     const Action& GetAction(size_t idx) const { return m_action_list[idx]; }
 
     //帧内action的数目

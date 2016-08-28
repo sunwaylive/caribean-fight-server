@@ -3,9 +3,9 @@
 class Action
 {
 public:
-    unsigned vkey;
-    unsigned arg;
-    unsigned role_idx;
-    unsigned frame_id;
+    int vkey;
+    int arg;
+    int role_idx;
+    int client_frame_id;
 };
 #endif

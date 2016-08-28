@@ -18,7 +18,13 @@ public:
     {}
 
     void SetGameId(int game_id) { m_game_id = game_id; }
+    
+    /**************Ssp********************/
+    int AddState(std::string state);
+    std::string GetState();
+    void ClearState();
 
+    /**************Fsp********************/
     //将新收集完毕的一帧加进来
     int AddFrame(const Frame *frame);
 
@@ -56,6 +62,11 @@ private:
 
 private:
     int m_game_id; //记录这个用于定位一些问题
+
+    /**************Ssp********************/
+    std::string m_state_buf; //buffer for saving all client states
+
+    /**************Fsp********************/
     char m_frame_buf[kMaxFrameBufInGame]; //存储了所有帧的信息，对空帧有压缩存储
     size_t m_used; //指向已经使用的下一个
     int m_max_frame_id;//当前的最大帧号, bug： 啥意思？

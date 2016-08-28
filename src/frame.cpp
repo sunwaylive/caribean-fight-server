@@ -1,7 +1,7 @@
 #include "frame.h"
 #include "udp_pkg_def.h"
 
-int Frame::AddAction(unsigned vkey, unsigned arg, unsigned role_idx)
+int Frame::AddAction(int vkey, int arg, int role_idx)
 {
     if(m_action_count < kMaxActionNumInOneFrame)
     {
@@ -26,7 +26,7 @@ bool Frame::SerializeToArray(char *bytes, size_t& len) const
     size_t need_len = this->ByteSize();
     if(len < need_len)
     {
-        printf("ERROR: frame_id: %d, len: %d, need_len: %d", m_frame_id, len, need_len);
+        printf("ERROR: frame_id: %d, len: %lu, need_len: %lu", m_frame_id, len, need_len);
         return false;
     }
 

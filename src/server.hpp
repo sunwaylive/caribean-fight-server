@@ -21,7 +21,7 @@ public:
     Server(boost::asio::io_service& io_service, short port, short fsp_port)
         : m_io_service(io_service),
           m_acceptor(io_service, tcp::endpoint(tcp::v4(), port)),
-          m_fsp_acceptor(io_service, tcp::endpoint(tcp::v4(), fsp_port))
+          m_game_acceptor(io_service, tcp::endpoint(tcp::v4(), fsp_port))
     {
         Session* new_session = new Session(m_io_service);
 
@@ -29,8 +29,8 @@ public:
                                 boost::bind(&Server::HandleAccept, this, new_session,
                                             boost::asio::placeholders::error));
 
-        m_fsp_acceptor.async_accept(new_session->FspSocket(),
-                                    boost::bind(&Server::FspHandleAccept, this, new_session,
+        m_game_acceptor.async_accept(new_session->GameSocket(),
+                                    boost::bind(&Server::GameHandleAccept, this, new_session,
                                                 boost::asio::placeholders::error));
     }
 
@@ -59,8 +59,8 @@ public:
                                     boost::bind(&Server::HandleAccept, this, new_session_2,
                                                 boost::asio::placeholders::error));
 
-            m_fsp_acceptor.async_accept(new_session_2->FspSocket(),
-                                    boost::bind(&Server::FspHandleAccept, this, new_session_2,
+            m_game_acceptor.async_accept(new_session_2->GameSocket(),
+                                    boost::bind(&Server::GameHandleAccept, this, new_session_2,
                                                 boost::asio::placeholders::error));
         }
         else
@@ -69,19 +69,19 @@ public:
         }
     }
 
-    void FspHandleAccept(Session *session, const boost::system::error_code &error)
+    void GameHandleAccept(Session *session, const boost::system::error_code &error)
     {
         if(!error)
         {
             if(session != NULL)
             {
-                printf("FspHandleAccept FspStart()\n");
-                session->FspStart(); 
+                printf("GameHandleAccept GameStart()\n");
+                session->GameStart(); 
             }
         }
         else
         {
-            printf("ERROR: Fsp Socket establish failed!\n");
+            printf("ERROR: Game Socket establish failed!\n");
             return;
         }
     }
@@ -89,7 +89,7 @@ public:
 private:
     boost::asio::io_service& m_io_service;
     tcp::acceptor m_acceptor;
-    tcp::acceptor m_fsp_acceptor;
+    tcp::acceptor m_game_acceptor;
 };
 
 #endif
