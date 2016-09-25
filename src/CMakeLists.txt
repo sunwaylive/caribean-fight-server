@@ -8,4 +8,6 @@ set (FILES
           game.cpp
           game_mgr.cpp
           frame.cpp
-          frame_mgr.cpp)
+          frame_mgr.cpp
+          util/shm_mem.cpp
+          util/fixed_mem_pool.cpp)

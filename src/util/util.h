@@ -18,8 +18,7 @@
 #include <string.h>
 #include <stdint.h>
 #include <sstream>
-#include <tconnapi/tframehead.h>
-#include "framework/singleton.h"
+#include "singleton.h"
 
 const uint32_t MAX_NAME_STR_LEN = 63;
 const uint32_t MAX_FILE_PATH_LEN = 2047;     // 文件或者路径的最大长度
