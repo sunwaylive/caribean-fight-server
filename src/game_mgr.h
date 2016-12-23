@@ -13,6 +13,7 @@ class GameMgr
 public:
     Game* GetGame(unsigned gid) const;
     Game* CreateGame(Room *r); //game must be created in a room
+    void Tick();
 
     size_t Size() const { return m_game_map.size(); }
 

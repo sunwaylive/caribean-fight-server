@@ -19,13 +19,14 @@ int Game::FrameTick()
     SspCalculateFrame();  //this will modify m_cur_state
     m_frame_mgr.AddState(m_cur_state);
     SendStateNtfToAll();
-    m_cur_state.clear();
 
     return 0;
 }
 
 int Game::SspCalculateFrame()
 {
+    // clear old state
+    m_cur_state.clear();
     //pick the newest state of each client
     for(auto session_iter = m_player_list->begin(); session_iter != m_player_list->end(); ++session_iter)
     {
@@ -47,6 +48,9 @@ void Game::SendStateNtfToAll()
     {
         (*session_iter)->SendStateCacheToClient(&m_frame_mgr);
     }
+
+    // clear after send
+    m_frame_mgr.ClearState();
 }
 
 int Game::FspCalculateFrame()

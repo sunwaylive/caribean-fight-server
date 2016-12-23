@@ -50,7 +50,6 @@ public:
     size_t GetFrameBufLen() const { return m_last_frame_pos; }
     size_t GetFrameBufUsed() const { return m_used; }
 
-    //清楚所有
     void Clear();
 
     //输出当前的使用状态

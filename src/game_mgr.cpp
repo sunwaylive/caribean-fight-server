@@ -33,3 +33,12 @@ Game* GameMgr::CreateGame(Room *r)
 
     return new_game;
 }
+
+void GameMgr::Tick()
+{
+    for (auto iter = m_game_map.begin(); iter != m_game_map.end(); ++iter)
+    {
+        cout << "room: "<< iter->first << " frame tick" << endl;
+        iter->second->FrameTick();
+    }
+}

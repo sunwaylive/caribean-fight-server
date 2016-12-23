@@ -58,6 +58,7 @@ void Session::GameHandleRead(const boost::system::error_code& error, size_t byte
 {
     if (!error)
     {
+        cout << "game socket read, m_game_pkg: " << m_game_pkg << endl;
         m_game_rsp = this->HandlePkg(m_game_pkg);
 
         boost::asio::async_write(m_game_socket,
@@ -149,6 +150,7 @@ string Session::HandlePkg(std::string pkg)
         //this->HandleActionPkg(pkg);
 
         //use ssp
+        cout << "get updategame in HandlePkg" << endl;
         this->SspHandleStatePkg(pkg);
     }
 
@@ -170,6 +172,7 @@ void Session::SendFrameCacheToClient(FrameMgr *frame_mgr)
 void Session::SspHandleStatePkg(std::string pkg)
 {
     //BUG: now a pkg is one state, may be changed
+    cout<<"Trace: get new state: %s" << pkg << endl;
     m_state_cache.push(pkg);
 }
 
@@ -195,6 +198,11 @@ void Session::SendStateCacheToClient(FrameMgr *frame_mgr)
     }
 
     std::string s = frame_mgr->GetState(); 
+    cout << "SendStateCacheToClient: " << s << endl;
+    if (s.length() <= 0)
+    {
+        return; 
+    }
     //BUG:
     boost::asio::async_write(m_game_socket, boost::asio::buffer(s, s.length()),
                                            boost::bind(&Session::SendStateHandleWrite, this,
