@@ -5,8 +5,13 @@
 /**************Ssp********************/
 int FrameMgr::AddState(std::string state)
 {
-    m_state_buf += state;
-    return 0;
+    if (state.length() > 0)
+    {
+        m_state_buf += state + "$";
+        return 0;
+    }
+
+    return -1;
 }
 
 std::string FrameMgr::GetState()
