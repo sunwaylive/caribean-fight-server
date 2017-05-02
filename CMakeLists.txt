@@ -2,6 +2,9 @@ cmake_minimum_required (VERSION 2.6)
 set (Server_VERSION_MAJOR 1)
 set (Server_VERSION_MINOR 0)
 
+# 支持YCM的跳转
+set( CMAKE_EXPORT_COMPILE_COMMANDS ON )
+
 #This dertermins the PEOJCET_SOURCE_DIR
 project(server)
 
